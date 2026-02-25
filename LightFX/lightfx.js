@@ -1,3 +1,4 @@
+(() => {
 //////////////////////////////////////////////////////////////////
 //                                                              //
 //  LIGHTFX SCRIPT FOR FM-DX-WEBSERVER               (V1.0)     //
@@ -11,9 +12,8 @@
 const plugin_version = "1.0";
 const plugin_name = "LightFX";
 const pluginHomepageUrl = "https://github.com/Highpoint2000/LightFX/releases";
-const pluginUpdateUrl = "https://raw.githubusercontent.com/Highpoint2000/LightFX/main/lightfx.js";
+const pluginUpdateUrl = "https://raw.githubusercontent.com/Highpoint2000/LightFX/refs/heads/main/LightFX/lightfx.js";
 
-(() => {
     // ==========================================
     // 1. DEFAULT SETTINGS
     // ==========================================
@@ -368,15 +368,10 @@ const pluginUpdateUrl = "https://raw.githubusercontent.com/Highpoint2000/LightFX
         uiUpdaters.push(updateOriginGridUI);
 
         // UI ORDER:
-        // 1. Origin
         scrollArea.appendChild(originControl); 
-        // 2. Autostart
         scrollArea.appendChild(createToggle('autoStart', 'Enable Autostart'));
-        // 3. Show Webserver Image
         scrollArea.appendChild(createToggle('keepBg', 'Show Webserver Image'));
-        // 4. Beam Transparency
         scrollArea.appendChild(createSlider('colorOpacity', 'Beam Transparency (Opacity)', 0.1, 1.0, 0.05, v => `${Math.round(v*100)}%`));
-        // Rest
         scrollArea.appendChild(createSlider('dimming', 'UI Background Dimming', 0, 1, 0.05, v => `${Math.round(v*100)}%`));
         scrollArea.appendChild(createSlider('intensity', 'Beam Brightness Boost', 0.5, 3.0, 0.1, v => `${v}x`));
         scrollArea.appendChild(createSlider('baseOpacity', 'Standby Glow', 0, 0.5, 0.05, v => `${Math.round(v*100)}%`));
@@ -412,7 +407,7 @@ const pluginUpdateUrl = "https://raw.githubusercontent.com/Highpoint2000/LightFX
     }
 
     // ==========================================
-    // 5. UPDATE CHECKER (Like MetricsMonitor)
+    // 5. UPDATE CHECKER (Like MetricsMonitor/Spectrum)
     // ==========================================
     function lfxCheckUpdate() {
         const isSetupPath = (window.location.pathname || "/").indexOf("/setup") >= 0;
@@ -430,11 +425,22 @@ const pluginUpdateUrl = "https://raw.githubusercontent.com/Highpoint2000/LightFX
                     if (isSetupPath) {
                         const settingsContainer = document.getElementById("plugin-settings");
                         if (settingsContainer) {
-                            settingsContainer.innerHTML += `<br><a href="${pluginHomepageUrl}" target="_blank" style="color:var(--color-4, #E6C269);">[${plugin_name}] Update: ${plugin_version} -> ${remoteVer}</a>`;
+                            const currentText = settingsContainer.textContent.trim();
+                            // Exact same format as Spectrum Graph, without inline color styles
+                            const updateLink = `<a href="${pluginHomepageUrl}" target="_blank">[${plugin_name}] Update available: ${plugin_version} --> ${remoteVer}</a><br>`;
+                            
+                            if (currentText === "No plugin settings are available.") {
+                                settingsContainer.innerHTML = updateLink;
+                            } else {
+                                settingsContainer.innerHTML += " " + updateLink;
+                            }
                         }
                     }
                     
-                    const updateIcon = document.querySelector(".wrapper-outer #navigation .sidenav-content .fa-puzzle-piece") || document.querySelector(".sidenav-content");
+                    const updateIcon = document.querySelector(".wrapper-outer #navigation .sidenav-content .fa-puzzle-piece") 
+                                    || document.querySelector(".wrapper-outer .sidenav-content") 
+                                    || document.querySelector(".sidenav-content");
+                    
                     if (updateIcon) {
                         const redDot = document.createElement("span");
                         redDot.style.cssText = `display: block; width: 12px; height: 12px; border-radius: 50%; background-color: #FE0830; margin-left: 82px; margin-top: -12px;`;
@@ -446,13 +452,13 @@ const pluginUpdateUrl = "https://raw.githubusercontent.com/Highpoint2000/LightFX
     }
 
     // ==========================================
-    // 6. BUTTON INJECTION (MetricsMonitor Style)
+    // 6. BUTTON INJECTION
     // ==========================================
     function createLightFxButton() {
         const buttonId = "lfx-header-btn";
         if (document.getElementById(buttonId)) return;
 
-        // FIX: Using non-breaking spaces (\u00A0) to prevent line wrap in tooltip
+        // Using non-breaking spaces (\u00A0) to prevent line wrap in tooltip
         const tooltipText = `Plugin\u00A0Version:\u00A0${plugin_version}`;
 
         (function waitForFunction() {
@@ -705,7 +711,7 @@ const pluginUpdateUrl = "https://raw.githubusercontent.com/Highpoint2000/LightFX
         checkInterval = setInterval(setupAudio, 1000);
         
         // Start update check in the background
-        setTimeout(lfxCheckUpdate, 3000);
+        setTimeout(lfxCheckUpdate, 500);
     }
 
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
